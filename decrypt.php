@@ -2,31 +2,38 @@
 
 error_reporting(0);
 
+if (getenv('USER') != 'root') die("Please execute as root\n");
+
 $idRsaAuthcode = file_get_contents('./id_rsa_authcode');
 if (!$idRsaAuthcode) die("Need id_rsa_authcode\n");
 $idRsaPubAuthcode = file_get_contents('./id_rsa_pub_authcode');
 if (!$idRsaPubAuthcode) die("Need id_rsa_pub_authcode\n");
 
-if (!$argv[1])  echo 'Please enter passwd: ';
-$pwd1 = $argv[1] ?: trim(fgets(STDIN));
-if (!$argv[2]) echo 'Please enter confirm passwd: ';
-$pwd2 = $argv[2] ?: trim(fgets(STDIN));
+if (!$argv[9])  echo 'Please enter passwd: ';
+$pwd1 = $argv[9] ?: trim(fgets(STDIN));
+if (!$argv[9]) echo 'Please enter confirm passwd: ';
+$pwd2 = $argv[9] ?: trim(fgets(STDIN));
 
 $myIdRsa = authcode($idRsaAuthcode, 'DECODE', sha1($pwd1 . $pwd2));
-if (strpos($myIdRsa, 'RSA PRIVATE KEY') === false) die("\n" . "Wrong passwd1\n");
+if (strpos($myIdRsa, 'RSA PRIVATE KEY') === false) die("\n" . "Wrong passwd\n");
 $myIdRsaPub = authcode($idRsaPubAuthcode, 'DECODE', sha1($pwd2 . $pwd1));
-if (strpos($myIdRsaPub, 'ssh-rsa') === false) die("\n" . "Wrong passwd2\n");
+if (strpos($myIdRsaPub, 'ssh-rsa') === false) die("\n" . "Wrong passwd\n");
 
-$myIdRsaFile = getenv('HOME') . '/.ssh/id_rsa';
+$sshDir = getenv('HOME') . '/.ssh/';
+if (!is_dir($sshDir)) mkdir($sshDir);
+
+$myIdRsaFile = $sshDir . 'id_rsa';
 $myfile1 = fopen($myIdRsaFile, 'w') or die("Unable to open id_rsa!\n");
 fwrite($myfile1, $myIdRsa);
 fclose($myfile1);
-chmod($myIdRsaFile, 0600);
 
-$myIdRsaPubFile = getenv('HOME') . '/.ssh/id_rsa.pub';
+$myIdRsaPubFile = $sshDir . 'id_rsa.pub';
 $myfile2 = fopen($myIdRsaPubFile, 'w') or die("Unable to open id_rsa.pub!\n");
 fwrite($myfile2, $myIdRsaPub);
 fclose($myfile2);
+
+chmod($sshDir, 0600);
+chmod($myIdRsaFile, 0600);
 chmod($myIdRsaPubFile, 0600);
 
 die('Success!');
