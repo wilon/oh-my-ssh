@@ -2,8 +2,6 @@
 
 error_reporting(0);
 
-if (getenv('USER') != 'root') die("Please execute as root\n");
-
 $idRsaAuthcode = file_get_contents('./id_rsa_authcode');
 if (!$idRsaAuthcode) die("Need id_rsa_authcode\n");
 $idRsaPubAuthcode = file_get_contents('./id_rsa_pub_authcode');
@@ -32,9 +30,9 @@ $myfile2 = fopen($myIdRsaPubFile, 'w') or die("Unable to open id_rsa.pub!\n");
 fwrite($myfile2, $myIdRsaPub);
 fclose($myfile2);
 
-chmod($sshDir, 0600);
+chmod($sshDir, 0750);
 chmod($myIdRsaFile, 0600);
-chmod($myIdRsaPubFile, 0600);
+chmod($myIdRsaPubFile, 0644);
 
 die('Success!');
 
